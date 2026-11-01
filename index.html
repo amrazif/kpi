@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>KPI Pensyarah</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: ledger-style app shell — sidebar index of 10 modules on desktop, scrolling tab strip on phone; main pane of cards */
+:root{
+  --bg:#F2F3F7; --surface:#FFFFFF; --sunk:#E8EAF1; --line:#D8DBE6; --fg:#1A1F33; --muted:#5D6379;
+  --ink:#2D3F8F; --ink-2:#1F2E6E; --ink-soft:#E2E6F6; --gold:#9C7019; --gold-soft:#F4EAD4;
+  --ok:#23704F; --ok-soft:#DDF0E6; --warn:#A65F00; --warn-soft:#FAEACF; --bad:#B1261E; --bad-soft:#F8DEDB;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px; --shadow:0 1px 2px rgba(26,31,51,.06), 0 4px 14px rgba(26,31,51,.05);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10121A; --surface:#191C27; --sunk:#222634; --line:#2D3244; --fg:#E6E8F1; --muted:#9AA0B6;
+  --ink:#97A8F2; --ink-2:#B9C5FA; --ink-soft:#242B4A; --gold:#D8AE57; --gold-soft:#372D1C;
+  --ok:#5CC08E; --ok-soft:#163226; --warn:#E5A241; --warn-soft:#382911; --bad:#EF7B71; --bad-soft:#3C1C1A;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#10121A; --surface:#191C27; --sunk:#222634; --line:#2D3244; --fg:#E6E8F1; --muted:#9AA0B6;
+  --ink:#97A8F2; --ink-2:#B9C5FA; --ink-soft:#242B4A; --gold:#D8AE57; --gold-soft:#372D1C;
+  --ok:#5CC08E; --ok-soft:#163226; --warn:#E5A241; --warn-soft:#382911; --bad:#EF7B71; --bad-soft:#3C1C1A;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14.5px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100%}
+/* sidebar */
+.side{background:var(--surface);border-right:1px solid var(--line);padding-block:20px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:14px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:18px}
+.seal{width:36px;height:36px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;color:var(--gold);font-size:13px;letter-spacing:.02em;flex:none}
+.brand b{font-family:var(--f-display);font-size:17px;display:block;line-height:1.1}
+.brand small{color:var(--muted);font-size:12px}
+.navgrp{margin:14px 0 4px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.nav a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;text-decoration:none;color:var(--fg);font-weight:500}
+.nav a:hover{background:var(--sunk)}
+.nav a.on{background:var(--ink-soft);color:var(--ink-2);font-weight:650}
+.nav .no{font-family:var(--f-mono);font-size:11px;color:var(--muted);width:20px}
+.nav a.on .no{color:var(--ink)}
+.nav .cnt{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.mode{margin-top:18px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+/* main */
+.main{min-width:0;padding-block:20px 60px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.top h1{font-size:28px;font-weight:800;letter-spacing:-.01em}
+.top .eyebrow{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:4px}
+.top p{margin:4px 0 0;color:var(--muted);max-width:65ch}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 13px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13.5px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--fg)}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn.pri:hover{background:var(--ink-2)}
+.btn.sm{padding:4px 9px;font-size:12.5px}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--sunk)}
+.btn.danger{color:var(--bad)}
+.btn.danger:hover{border-color:var(--bad)}
+select.ctl,input.ctl,textarea.ctl{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;min-width:0}
+textarea.ctl{resize:vertical;min-height:70px;width:100%}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.card h2{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.card h2 small{font-family:var(--f-body);font-weight:500;color:var(--muted);font-size:12.5px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g-dash{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+/* hero ring */
+.hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
+.ring{position:relative;width:150px;height:150px}
+.ring svg{transform:rotate(-90deg)}
+.ring .v{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring .v b{font-family:var(--f-display);font-size:36px;font-weight:800;line-height:1}
+.ring .v span{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{border-left:2px solid var(--line);padding:2px 0 2px 12px;min-width:0}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .n{font-family:var(--f-display);font-size:26px;font-weight:800;line-height:1.1}
+.stat .n small{font-family:var(--f-mono);font-size:13px;font-weight:400;color:var(--muted)}
+.stat .s{font-size:12px;color:var(--muted)}
+/* bars */
+.bar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:99px}
+.bar.ok i{background:var(--ok)} .bar.warn i{background:var(--warn)} .bar.bad i{background:var(--bad)}
+.kpirow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.kpirow:last-child{border-bottom:0}
+.kpirow .lbl{font-weight:550;min-width:0}
+.kpirow .val{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);text-align:right;white-space:nowrap}
+.kpirow .bar{grid-column:1/-1}
+.modtag{display:inline-block;font-family:var(--f-mono);font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:1px}
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)} .chip.ink{background:var(--ink-soft);color:var(--ink-2)}
+.chip.gold{background:var(--gold-soft);color:var(--gold)}
+/* urgent */
+.urg{display:flex;flex-direction:column}
+.urg .it{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.urg .it:last-child{border-bottom:0}
+.urg .stripe{align-self:stretch;border-radius:3px;background:var(--line)}
+.urg .stripe.bad{background:var(--bad)} .urg .stripe.warn{background:var(--warn)} .urg .stripe.ok{background:var(--ok)}
+.urg .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.urg .d{font-size:12px;color:var(--muted)}
+/* pipeline */
+.pipe{display:flex;height:30px;border-radius:7px;overflow:hidden;background:var(--sunk);margin:6px 0 10px}
+.pipe span{display:grid;place-items:center;font-family:var(--f-mono);font-size:11.5px;color:var(--surface);font-weight:600;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+/* module overview */
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.mod{border:1px solid var(--line);border-radius:9px;padding:11px 12px;text-decoration:none;color:var(--fg);display:flex;flex-direction:column;gap:6px;min-width:0}
+.mod:hover{border-color:var(--ink)}
+.mod .h{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.mod .h b{font-family:var(--f-display);font-size:14.5px}
+.mod .h span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.mod .m{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+/* record list */
+.list{display:flex;flex-direction:column;gap:8px}
+.rec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:start}
+.rec .ti{font-weight:650;font-size:15px;min-width:0;overflow-wrap:anywhere}
+.rec .sb{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.rec .chips{display:flex;flex-wrap:wrap;gap:5px;grid-column:1/-1}
+.rec .pr{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.rec .pr .num{font-size:12px;color:var(--muted)}
+.rec .act{display:flex;gap:4px;align-items:center}
+.ev{font-size:12px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.ev.none{color:var(--bad)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar .ctl{flex:1 1 200px}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.strip .stat{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:8px;padding:10px 12px}
+.empty{border:1.5px dashed var(--line);border-radius:var(--r);padding:28px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--fg);font-family:var(--f-display);font-size:17px;margin-bottom:6px}
+/* kanban */
+.kan{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--sunk);border-radius:var(--r);padding:10px;min-height:240px;display:flex;flex-direction:column;gap:8px}
+.col.over{outline:2px dashed var(--ink);outline-offset:-2px}
+.col h3{font-size:13.5px;font-family:var(--f-body);font-weight:700;display:flex;justify-content:space-between;padding:2px 4px 4px}
+.col h3 span{font-family:var(--f-mono);font-weight:400;color:var(--muted)}
+.task{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;cursor:grab;display:flex;flex-direction:column;gap:6px}
+.task.dragging{opacity:.45}
+.task .tt{font-weight:600;overflow-wrap:anywhere}
+.task .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.task .mv{display:flex;justify-content:space-between;align-items:center}
+.pri-Tinggi{border-left:3px solid var(--bad)} .pri-Sederhana{border-left:3px solid var(--warn)} .pri-Rendah{border-left:3px solid var(--ok)}
+/* habit */
+.hab{overflow-x:auto}
+.hab table{border-collapse:collapse;width:100%;min-width:520px}
+.hab th,.hab td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--line);font-size:12.5px}
+.hab th:first-child,.hab td:first-child{text-align:left;font-weight:600;padding-right:10px}
+.hab th.today{color:var(--ink)}
+.tick{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;display:inline-grid;place-items:center;font-weight:800;color:var(--surface)}
+.tick.on{background:var(--ok);border-color:var(--ok)}
+/* tables */
+.tbl{overflow-x:auto}
+.tbl table{width:100%;border-collapse:collapse;min-width:560px}
+.tbl th,.tbl td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13.5px}
+.tbl th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:650}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl input.ctl{width:110px;text-align:right;padding:5px 8px}
+/* report */
+.report{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:28px clamp(16px,4vw,40px)}
+.report h2{font-size:22px;margin:22px 0 8px}
+.report h3{font-size:15.5px;margin:18px 0 6px;color:var(--ink-2)}
+.report .hdr{border-bottom:2px solid var(--fg);padding-bottom:12px;margin-bottom:6px}
+.report ul{margin:6px 0;padding-left:20px}
+.report li{margin:3px 0}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(10,12,20,.45);display:flex;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:max(24px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 24px max(12px, env(safe-area-inset-left, 0px))}
+.dlg{background:var(--surface);border-radius:14px;width:min(640px,100%);box-shadow:0 20px 60px rgba(0,0,0,.3);border:1px solid var(--line)}
+.dlg header{padding:16px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dlg header h3{font-size:18px}
+.dlg .bd{padding:16px 18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.dlg .bd .full{grid-column:1/-1}
+.dlg footer{padding:12px 18px 16px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line)}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld label{font-size:12px;font-weight:650;color:var(--muted)}
+.fld .ctl{width:100%}
+.fld .hint{font-size:11.5px;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom, 0px));background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:9px;font-weight:600;z-index:60;font-size:13.5px}
+.note{background:var(--gold-soft);border:1px solid var(--line);border-radius:9px;padding:10px 13px;font-size:13px}
+.guide ol{padding-left:20px;margin:6px 0} .guide li{margin:6px 0;max-width:72ch}
+.guide code{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 11px;cursor:pointer;font-weight:600;font-size:12.5px}
+.seg button.on{background:var(--ink-soft);color:var(--ink-2)}
+.wk{display:flex;flex-direction:column;gap:2px}
+.logit{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:start}
+.logit:last-child{border-bottom:0}
+@media (max-width:980px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:env(safe-area-inset-top, 0px);height:auto;z-index:20;border-right:0;border-bottom:1px solid var(--line);padding:10px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px));overflow:visible}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:21;background:var(--surface)}
+  .brand{margin-bottom:8px} .brand small{display:none}
+  .nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{white-space:nowrap;padding:6px 10px;background:var(--sunk)}
+  .nav .cnt,.navgrp,.mode{display:none}
+  .g-dash,.g2,.g3{grid-template-columns:minmax(0,1fr)}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .hero{grid-template-columns:minmax(0,1fr);justify-items:center}
+  .top h1{font-size:23px}
+  .dlg .bd{grid-template-columns:minmax(0,1fr)}
+  .logit{grid-template-columns:minmax(0,1fr) auto}
+  .logit .dt{grid-column:1/-1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="seal">KPI</div><div><b>KPI Pensyarah</b><small id="who">Rekod prestasi akademik</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="mode" id="mode"><span class="dot" style="background:var(--muted)"></span>Memuatkan…</div>
+  </aside>
+  <main class="main"><div class="wrap" id="view"></div></main>
+</div>
+<div id="modal"></div>
+
+<script>
+/* =========================================================
+   SKEMA 10 MODUL
+   ========================================================= */
+const Y0 = new Date().getFullYear();
+const MODS = [
+ {id:'pengajaran', no:'01', name:'Pengajaran', en:'Teaching', due:'tarikhPortfolio',
+  fields:[
+   {k:'kod',l:'Kod Kursus',t:'text',req:1,ph:'cth: SSH1013'},
+   {k:'nama',l:'Nama Kursus',t:'text',req:1},
+   {k:'sesi',l:'Semester / Sesi',t:'text',ph:'Sem 1, 2026/2027'},
+   {k:'pelajar',l:'Bilangan Pelajar',t:'number'},
+   {k:'kredit',l:'Jam Kredit',t:'number'},
+   {k:'portfolio',l:'Status Fail Pengajaran (Course Portfolio)',t:'select',o:['Belum Mula','Dalam Penyediaan','Lengkap','Disahkan']},
+   {k:'eppp',l:'Skor e-PPP / Maklum Balas Pelajar (%)',t:'number'},
+   {k:'tarikhPortfolio',l:'Tarikh Akhir Hantar Portfolio',t:'date'}],
+  title:r=>`${r.kod||''} · ${r.nama||''}`, sub:r=>[r.sesi, r.pelajar&&`${r.pelajar} pelajar`, r.kredit&&`${r.kredit} kredit`].filter(Boolean).join(' · '),
+  chips:r=>[r.portfolio&&[r.portfolio,['Lengkap','Disahkan'].includes(r.portfolio)?'ok':'warn'], r.eppp&&[`e-PPP ${r.eppp}%`, +r.eppp>=85?'ok':+r.eppp>=70?'ink':'bad']],
+  prog:r=>({'Belum Mula':0,'Dalam Penyediaan':45,'Lengkap':85,'Disahkan':100})[r.portfolio]??0 },
+ {id:'penyeliaan', no:'02', name:'Penyeliaan', en:'Supervision', due:'got', span:['tarikhDaftar','tarikhGrad'],
+  fields:[
+   {k:'nama',l:'Nama Pelajar',t:'text',req:1},
+   {k:'peringkat',l:'Peringkat',t:'select',o:['PhD','Master','Sarjana Muda']},
+   {k:'peranan',l:'Status Penyeliaan',t:'select',o:['Penyelia Utama','Penyelia Bersama']},
+   {k:'tajuk',l:'Tajuk Kajian',t:'textarea',full:1},
+   {k:'status',l:'Status Semasa',t:'select',o:['Cadangan','Kajian','Menulis','Viva','Bergraduat']},
+   {k:'tarikhDaftar',l:'Tarikh Daftar',t:'date'},
+   {k:'got',l:'Sasaran Graduan Tepat Masa (GOT)',t:'date'},
+   {k:'tarikhGrad',l:'Tarikh Bergraduat',t:'date',hint:'Isi bila pelajar tamat'}],
+  title:r=>r.nama||'—', sub:r=>r.tajuk||'',
+  chips:r=>[[r.peringkat,'ink'],[r.peranan,''],[r.status, r.status==='Bergraduat'?'ok':r.status==='Viva'?'gold':'']],
+  prog:r=>({'Cadangan':15,'Kajian':40,'Menulis':65,'Viva':85,'Bergraduat':100})[r.status]??0 },
+ {id:'penyelidikan', no:'03', name:'Penyelidikan', en:'Research', due:'tamat', span:['mula','tamat'],
+  fields:[
+   {k:'tajuk',l:'Tajuk Geran / Projek',t:'textarea',req:1,full:1},
+   {k:'kodGeran',l:'Kod / Skim Geran',t:'text',ph:'cth: FRGS, Geran Katalis'},
+   {k:'kategori',l:'Kategori',t:'select',o:['Universiti','Kebangsaan','Antarabangsa','Industri']},
+   {k:'peranan',l:'Peranan',t:'select',o:['Ketua Penyelidik','Penyelidik Bersama']},
+   {k:'dana',l:'Jumlah Dana (RM)',t:'number'},
+   {k:'baki',l:'Baki Peruntukan (RM)',t:'number'},
+   {k:'mula',l:'Tarikh Mula',t:'date'},
+   {k:'tamat',l:'Tarikh Tamat',t:'date'},
+   {k:'milestone',l:'Status Milestone',t:'select',o:['Permohonan','Diluluskan','Fasa 1','Fasa 2','Laporan Akhir','Tamat']}],
+  title:r=>r.tajuk||'—', sub:r=>[r.kodGeran, r.kategori, r.peranan].filter(Boolean).join(' · '),
+  chips:r=>[r.milestone&&[r.milestone, r.milestone==='Tamat'?'ok':r.milestone==='Permohonan'?'':'ink'], r.dana&&[rm(r.dana),'gold'], r.baki!==undefined&&r.baki!==''&&[`Baki ${rm(r.baki)}`,'']],
+  prog:r=>({'Permohonan':10,'Diluluskan':25,'Fasa 1':45,'Fasa 2':70,'Laporan Akhir':90,'Tamat':100})[r.milestone]??0 },
+ {id:'penerbitan', no:'04', name:'Penerbitan', en:'Publication', due:'tarikhSasaran',
+  fields:[
+   {k:'tajuk',l:'Tajuk Artikel / Buku',t:'textarea',req:1,full:1},
+   {k:'jurnal',l:'Jurnal / Penerbit',t:'text',full:1},
+   {k:'jenis',l:'Jenis / Indeks',t:'select',o:['WoS Q1','WoS Q2','WoS Q3','WoS Q4','Scopus Q1','Scopus Q2','Scopus Q3','Scopus Q4','MyCite','Buku','Bab Buku','Prosiding','Lain-lain']},
+   {k:'peringkat',l:'Peringkat',t:'select',o:['Draf','Dihantar','Under Review','Pembetulan','Diterima','Terbit']},
+   {k:'peranan',l:'Peranan',t:'select',o:['Penulis Utama','Penulis Koresponden','Utama & Koresponden','Penulis Bersama']},
+   {k:'sitasi',l:'Indeks Sitasi (bil. sitasi)',t:'number'},
+   {k:'doi',l:'DOI / URL Artikel',t:'url',ph:'https://doi.org/...'},
+   {k:'tarikhSasaran',l:'Tarikh Sasaran Tindakan',t:'date',hint:'cth: tarikh akhir hantar pembetulan'}],
+  title:r=>r.tajuk||'—', sub:r=>[r.jurnal, r.peranan].filter(Boolean).join(' · '),
+  chips:r=>[r.jenis&&[r.jenis, /Q1/.test(r.jenis)?'gold':/WoS|Scopus/.test(r.jenis)?'ink':''], r.peringkat&&[r.peringkat, r.peringkat==='Terbit'?'ok':r.peringkat==='Diterima'?'ok':r.peringkat==='Draf'?'':'warn'], +r.sitasi>0&&[`${r.sitasi} sitasi`,'']],
+  prog:r=>({'Draf':10,'Dihantar':30,'Under Review':50,'Pembetulan':65,'Diterima':85,'Terbit':100})[r.peringkat]??0 },
+ {id:'persidangan', no:'05', name:'Persidangan', en:'Conferences', due:'tarikh',
+  fields:[
+   {k:'nama',l:'Nama Persidangan',t:'text',req:1,full:1},
+   {k:'tajukKertas',l:'Tajuk Kertas Kerja',t:'text',full:1},
+   {k:'peringkat',l:'Peringkat',t:'select',o:['Kebangsaan','Antarabangsa']},
+   {k:'peranan',l:'Peranan',t:'select',o:['Keynote','Pembentang','Peserta','Jawatankuasa']},
+   {k:'tarikh',l:'Tarikh',t:'date'},
+   {k:'tempat',l:'Tempat',t:'text'},
+   {k:'status',l:'Status Pembentangan',t:'select',o:['Dirancang','Abstrak Dihantar','Diterima','Dibentang / Dihadiri']},
+   {k:'prosiding',l:'Prosiding',t:'select',o:['Tiada','Belum Terbit','Terbit – Tidak Berindeks','Terbit – Scopus','Terbit – WoS']}],
+  title:r=>r.nama||'—', sub:r=>[r.tajukKertas, r.tempat].filter(Boolean).join(' · '),
+  chips:r=>[[r.peringkat, r.peringkat==='Antarabangsa'?'ink':''],[r.peranan,''], r.status&&[r.status, r.status.startsWith('Dibentang')?'ok':'warn'], r.prosiding&&r.prosiding!=='Tiada'&&[r.prosiding, /Scopus|WoS/.test(r.prosiding)?'gold':'']],
+  prog:r=>({'Dirancang':15,'Abstrak Dihantar':35,'Diterima':60,'Dibentang / Dihadiri':100})[r.status]??0 },
+ {id:'perundingan', no:'06', name:'Perundingan', en:'Consultancy', due:'tamat', span:['mula','tamat'],
+  fields:[
+   {k:'agensi',l:'Nama Agensi / Industri',t:'text',req:1},
+   {k:'skop',l:'Skop Perundingan',t:'textarea',full:1},
+   {k:'nilai',l:'Nilai Kontrak (RM)',t:'number'},
+   {k:'mula',l:'Tarikh Mula Kontrak',t:'date'},
+   {k:'tamat',l:'Tarikh Tamat Kontrak',t:'date'},
+   {k:'laporan',l:'Status Hasil / Laporan',t:'select',o:['Belum Mula','Dalam Pelaksanaan','Draf Diserahkan','Laporan Akhir Diserahkan']},
+   {k:'bayaran',l:'Status Bayaran / Akuan Universiti',t:'select',o:['Belum Dibayar','Bayaran Separa','Dibayar Penuh','Diakui Universiti']}],
+  title:r=>r.agensi||'—', sub:r=>r.skop||'',
+  chips:r=>[r.nilai&&[rm(r.nilai),'gold'], r.laporan&&[r.laporan, r.laporan.startsWith('Laporan Akhir')?'ok':'warn'], r.bayaran&&[r.bayaran, ['Dibayar Penuh','Diakui Universiti'].includes(r.bayaran)?'ok':'']],
+  prog:r=>Math.round(((({'Belum Mula':0,'Dalam Pelaksanaan':40,'Draf Diserahkan':70,'Laporan Akhir Diserahkan':100})[r.laporan]??0)+(({'Belum Dibayar':0,'Bayaran Separa':50,'Dibayar Penuh':90,'Diakui Universiti':100})[r.bayaran]??0))/2) },
+ {id:'pentadbiran', no:'07', name:'Pentadbiran', en:'Administration', due:'tamat', span:['mula','tamat'], buktiLabel:'Surat Lantikan (Pautan Bukti)',
+  fields:[
+   {k:'jawatan',l:'Jawatan Pentadbiran',t:'text',req:1,ph:'cth: Ketua Program, Setiausaha Jawatankuasa'},
+   {k:'peringkat',l:'Peringkat',t:'select',o:['Program / Jabatan','Fakulti','Universiti','Kebangsaan']},
+   {k:'mula',l:'Tarikh Mula Lantikan',t:'date'},
+   {k:'tamat',l:'Tarikh Tamat Lantikan',t:'date'},
+   {k:'kpiPortfolio',l:'KPI Khusus Portfolio',t:'textarea',full:1},
+   {k:'statusKpi',l:'Status KPI Portfolio',t:'select',o:['Belum Mula','Dalam Pelaksanaan','Tercapai']}],
+  title:r=>r.jawatan||'—', sub:r=>r.kpiPortfolio||'',
+  chips:r=>[[r.peringkat,'ink'], r.statusKpi&&[r.statusKpi, r.statusKpi==='Tercapai'?'ok':'warn']],
+  prog:r=>({'Belum Mula':0,'Dalam Pelaksanaan':50,'Tercapai':100})[r.statusKpi]??0 },
+ {id:'profesionalisme', no:'08', name:'Profesionalisme', en:'Professional Dev.', due:'pembaharuan',
+  fields:[
+   {k:'jenis',l:'Jenis',t:'select',o:['Keahlian Badan Ikhtisas','Pensijilan Profesional','Kursus / Latihan (CPD)']},
+   {k:'nama',l:'Nama Badan / Sijil / Kursus',t:'text',req:1,ph:'cth: Persatuan Sejarah Malaysia, IEEE, MBOT'},
+   {k:'cpd',l:'Mata CPD / Jam Latihan',t:'number'},
+   {k:'tarikh',l:'Tarikh Hadir / Diperoleh',t:'date'},
+   {k:'pembaharuan',l:'Tarikh Pembaharuan Lesen / Keahlian',t:'date'},
+   {k:'status',l:'Status',t:'select',o:['Aktif','Selesai','Perlu Diperbaharui','Tamat']}],
+  title:r=>r.nama||'—', sub:r=>r.jenis||'',
+  chips:r=>[+r.cpd>0&&[`${r.cpd} mata CPD`,'ink'], r.status&&[r.status, ['Aktif','Selesai'].includes(r.status)?'ok':r.status==='Tamat'?'bad':'warn']],
+  prog:r=>({'Aktif':100,'Selesai':100,'Perlu Diperbaharui':50,'Tamat':0})[r.status]??0 },
+ {id:'perkhidmatan', no:'09', name:'Perkhidmatan', en:'Service', due:'tarikh',
+  fields:[
+   {k:'program',l:'Nama Program / Aktiviti',t:'text',req:1,full:1},
+   {k:'kategori',l:'Kategori',t:'select',o:['Komuniti','Industri','Sekolah','Universiti']},
+   {k:'peranan',l:'Peranan',t:'select',o:['Penasihat','Penceramah','Sukarelawan','Penganjur','Panel / Penilai']},
+   {k:'tarikh',l:'Tarikh',t:'date'},
+   {k:'jam',l:'Bilangan Jam',t:'number'},
+   {k:'status',l:'Status',t:'select',o:['Dirancang','Selesai']},
+   {k:'impak',l:'Impak / Liputan Media',t:'textarea',full:1},
+   {k:'media',l:'Pautan Liputan Media',t:'url'}],
+  title:r=>r.program||'—', sub:r=>r.impak||'',
+  chips:r=>[[r.kategori,'ink'],[r.peranan,''], +r.jam>0&&[`${r.jam} jam`,''], r.status&&[r.status, r.status==='Selesai'?'ok':'warn']],
+  prog:r=>r.status==='Selesai'?100:20 },
+ {id:'peribadi', no:'10', name:'Peribadi', en:'Work-Life Balance', due:'tarikh',
+  fields:[
+   {k:'matlamat',l:'Matlamat Pembangunan Diri',t:'text',req:1,full:1},
+   {k:'kategori',l:'Kategori',t:'select',o:['Wellbeing','Penulisan Harian','Pembacaan Ilmiah','Kesihatan Fizikal','Kerohanian','Keluarga','Kemahiran Baharu']},
+   {k:'sasaran',l:'Ukuran Sasaran',t:'text',ph:'cth: 500 patah perkataan sehari'},
+   {k:'tarikh',l:'Tarikh Sasaran',t:'date'},
+   {k:'status',l:'Status',t:'select',o:['Belum Mula','Sedang Berjalan','Tercapai']}],
+  title:r=>r.matlamat||'—', sub:r=>r.sasaran||'',
+  chips:r=>[[r.kategori,'ink'], r.status&&[r.status, r.status==='Tercapai'?'ok':'warn']],
+  prog:r=>({'Belum Mula':0,'Sedang Berjalan':50,'Tercapai':100})[r.status]??0 },
+];
+const MOD = Object.fromEntries(MODS.map(m=>[m.id,m]));
+const COMMON = m => [
+  {k:'tahun',l:'Tahun Penilaian',t:'number',req:1},
+  {k:'bukti',l:m.buktiLabel||'Pautan Bukti (Google Drive / OneDrive)',t:'url',ph:'https://drive.google.com/...',full:1},
+  {k:'nota',l:'Catatan',t:'textarea',full:1}];
+
+/* =========================================================
+   KPI & SASARAN
+   ========================================================= */
+const KPIS = [
+ {id:'p_kursus',mod:'pengajaran',l:'Kursus diajar',u:'kursus',def:4,f:R=>R.length},
+ {id:'p_eppp',mod:'pengajaran',l:'Purata skor e-PPP',u:'%',def:85,f:R=>avg(R.map(r=>+r.eppp).filter(x=>x>0))},
+ {id:'p_portf',mod:'pengajaran',l:'Fail kursus lengkap / disahkan',u:'%',def:100,f:R=>R.length?Math.round(100*R.filter(r=>['Lengkap','Disahkan'].includes(r.portfolio)).length/R.length):0},
+ {id:'sv_pg',mod:'penyeliaan',l:'Pelajar pascasiswazah diselia',u:'pelajar',def:4,f:R=>R.filter(r=>r.peringkat!=='Sarjana Muda').length},
+ {id:'sv_grad',mod:'penyeliaan',l:'Pelajar bergraduat',u:'pelajar',def:1,f:(R,y)=>R.filter(r=>r.status==='Bergraduat'&&(!r.tarikhGrad||r.tarikhGrad.slice(0,4)==String(y))).length},
+ {id:'r_aktif',mod:'penyelidikan',l:'Geran aktif',u:'geran',def:2,f:R=>R.filter(isActiveGrant).length},
+ {id:'r_ketua',mod:'penyelidikan',l:'Geran sebagai Ketua Penyelidik',u:'geran',def:1,f:R=>R.filter(r=>r.peranan==='Ketua Penyelidik'&&r.milestone!=='Permohonan').length},
+ {id:'r_dana',mod:'penyelidikan',l:'Jumlah dana geran diperoleh',u:'RM',def:50000,f:R=>sum(R.filter(r=>r.milestone&&r.milestone!=='Permohonan').map(r=>+r.dana||0))},
+ {id:'pb_terbit',mod:'penerbitan',l:'Penerbitan terbit (semua jenis)',u:'item',def:6,f:R=>R.filter(r=>r.peringkat==='Terbit').length},
+ {id:'pb_idx',mod:'penerbitan',l:'Artikel WoS / Scopus terbit',u:'artikel',def:4,f:R=>R.filter(r=>r.peringkat==='Terbit'&&/WoS|Scopus/.test(r.jenis||'')).length},
+ {id:'pb_q1',mod:'penerbitan',l:'Artikel Q1 (WoS / Scopus) terbit',u:'artikel',def:2,f:R=>R.filter(r=>r.peringkat==='Terbit'&&/Q1/.test(r.jenis||'')).length},
+ {id:'pb_utama',mod:'penerbitan',l:'Terbit sebagai penulis utama / koresponden',u:'item',def:3,f:R=>R.filter(r=>r.peringkat==='Terbit'&&r.peranan&&r.peranan!=='Penulis Bersama').length},
+ {id:'pb_hantar',mod:'penerbitan',l:'Manuskrip dihantar ke jurnal / penerbit',u:'item',def:8,f:R=>R.filter(r=>r.peringkat&&r.peringkat!=='Draf').length},
+ {id:'c_bentang',mod:'persidangan',l:'Kertas kerja dibentang',u:'kertas',def:2,f:R=>R.filter(r=>['Keynote','Pembentang'].includes(r.peranan)&&(r.status||'').startsWith('Dibentang')).length},
+ {id:'c_intl',mod:'persidangan',l:'Persidangan peringkat antarabangsa',u:'acara',def:1,f:R=>R.filter(r=>r.peringkat==='Antarabangsa'&&(r.status||'').startsWith('Dibentang')).length},
+ {id:'cs_nilai',mod:'perundingan',l:'Nilai kontrak perundingan',u:'RM',def:10000,f:R=>sum(R.map(r=>+r.nilai||0))},
+ {id:'a_jawatan',mod:'pentadbiran',l:'Jawatan pentadbiran disandang',u:'jawatan',def:1,f:R=>R.length},
+ {id:'pr_cpd',mod:'profesionalisme',l:'Mata CPD / jam latihan terkumpul',u:'mata',def:40,f:R=>sum(R.map(r=>+r.cpd||0))},
+ {id:'s_prog',mod:'perkhidmatan',l:'Program perkhidmatan selesai',u:'program',def:4,f:R=>R.filter(r=>r.status==='Selesai').length},
+ {id:'s_jam',mod:'perkhidmatan',l:'Jam khidmat komuniti & universiti',u:'jam',def:40,f:R=>sum(R.filter(r=>r.status==='Selesai').map(r=>+r.jam||0))},
+ {id:'pe_goal',mod:'peribadi',l:'Matlamat diri tercapai',u:'matlamat',def:3,f:R=>R.filter(r=>r.status==='Tercapai').length},
+ {id:'pe_habit',mod:'peribadi',l:'Pematuhan tabiat harian',u:'%',def:80,f:(R,y)=>habitRate(y)},
+];
+const DEFAULT_HABITS = ['Menulis 30 minit','Membaca 1 artikel jurnal','Senaman 30 minit','Masa berkualiti bersama keluarga'];
+const TASK_COLS = ['Belum Mula','Sedang Dibuat','Semakan','Selesai'];
+
+/* =========================================================
+   UTILITI
+   ========================================================= */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sum = a=>a.reduce((x,y)=>x+y,0);
+const avg = a=>a.length?Math.round(sum(a)/a.length*10)/10:0;
+const rm = n=>'RM '+(+n||0).toLocaleString('en-MY',{maximumFractionDigits:0});
+const today = ()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const ymd = d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const pd = s=>s?new Date(s+'T00:00:00'):null;
+const daysTo = s=>Math.round((pd(s)-today())/864e5);
+const fmtD = s=>{if(!s)return'';const d=pd(s);return d.toLocaleDateString('ms-MY',{day:'numeric',month:'short',year:'numeric'})};
+const uid = ()=>'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const mondayOf = d=>{const x=new Date(d);x.setHours(0,0,0,0);const w=(x.getDay()+6)%7;x.setDate(x.getDate()-w);return x};
+const isActiveGrant = r=>['Diluluskan','Fasa 1','Fasa 2','Laporan Akhir'].includes(r.milestone);
+const fmtVal = (v,u)=>u==='RM'?rm(v):u==='%'?`${v}%`:`${v}`;
+
+/* =========================================================
+   STOR DATA: awan (db Artifact) atau tempatan (localStorage)
+   ========================================================= */
+const LS_KEY='kpiPensyarah.v1';
+const ST = {mode:'loading', recs:{}, cfg:{targets:{},habits:DEFAULT_HABITS.slice(),profil:{}}, habit:{}, year:Y0, err:''};
+let DB=null;
+function lsRead(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'null')}catch(e){return null}}
+function lsWrite(){try{localStorage.setItem(LS_KEY,JSON.stringify({recs:ST.recs,cfg:ST.cfg,habit:ST.habit}));return true}catch(e){toast('Gagal simpan dalam pelayar ini — eksport sandaran JSON segera.');return false}}
+function useLocal(){
+  ST.mode='local'; const d=lsRead();
+  if(d){ST.recs=d.recs||{};ST.cfg=Object.assign({targets:{},habits:DEFAULT_HABITS.slice(),profil:{}},d.cfg||{});ST.habit=d.habit||{}}
+  render();
+}
+async function initStore(){
+  if(!(window.claude&&typeof window.claude.use==='function')){useLocal();return}
+  let db=null; try{db=await window.claude.use('db')}catch(e){db=null}
+  if(!db){useLocal();return}
+  DB=db; let got=false;
+  const timer=setTimeout(()=>{if(!got){ST.mode='error';ST.err='Data awan tidak dapat dimuatkan dalam 10 saat. Muat semula halaman, atau guna mod tempatan.';render()}},10000);
+  const fail=e=>{clearTimeout(timer);ST.mode='error';ST.err=(e&&e.code==='permission_denied')?'Anda tiada akses kepada data ini. Hanya pemilik (dan editor yang dijemput) boleh membaca rekod KPI.':'Ralat memuatkan data awan: '+((e&&e.message)||'tidak diketahui');render()};
+  db.collection('kpi').onSnapshot(snap=>{got=true;clearTimeout(timer);const o={};snap.docs.forEach(d=>{o[d.id]=Object.assign({},d.data(),{id:d.id})});ST.recs=o;if(ST.mode!=='cloud'){ST.mode='cloud'}render()},fail);
+  db.doc('cfg/main').onSnapshot(s=>{if(s.exists){const d=s.data();ST.cfg={targets:d.targets||{},habits:Array.isArray(d.habits)?d.habits.slice():DEFAULT_HABITS.slice(),profil:d.profil||{}}}render()},()=>{});
+  db.collection('habit').onSnapshot(snap=>{const o={};snap.docs.forEach(d=>{o[d.id]=Object.assign({},(d.data()||{}).d||{})});ST.habit=o;render()},()=>{});
+}
+const Store={
+  async put(rec){
+    rec=Object.assign({},rec); if(!rec.id)rec.id=uid(); if(!rec.dicipta)rec.dicipta=Date.now(); rec.dikemaskini=Date.now();
+    ST.recs[rec.id]=rec;
+    if(ST.mode==='cloud'){const {id,...body}=rec; try{await DB.collection('kpi').doc(id).set(clean(body))}catch(e){toast(errMsg(e));throw e}}
+    else lsWrite();
+    render(); return rec;
+  },
+  async del(id){
+    delete ST.recs[id];
+    if(ST.mode==='cloud'){try{await DB.collection('kpi').doc(id).delete()}catch(e){toast(errMsg(e))}} else lsWrite();
+    render();
+  },
+  async cfg(){ if(ST.mode==='cloud'){try{await DB.doc('cfg/main').set(clean(ST.cfg))}catch(e){toast(errMsg(e))}} else lsWrite(); render(); },
+  async habitMonth(m){ if(ST.mode==='cloud'){try{await DB.collection('habit').doc(m).set({d:ST.habit[m]||{}})}catch(e){toast(errMsg(e))}} else lsWrite(); render(); }
+};
+function clean(o){return JSON.parse(JSON.stringify(o,(k,v)=>v===undefined?null:v))}
+function errMsg(e){const c=e&&e.code;if(c==='quota_exceeded')return'Storan penuh (had 25,000 rekod). Eksport sandaran dan padam rekod lama.';if(c==='permission_denied')return'Tiada kebenaran menulis.';return'Gagal simpan: '+((e&&e.message)||'ralat')}
+
+/* =========================================================
+   PERTANYAAN DATA
+   ========================================================= */
+const all = ()=>Object.values(ST.recs);
+function inYear(r,y){
+  if(+r.tahun===y) return true;
+  const m=MOD[r.mod]; if(!m||!m.span) return false;
+  if(!r.tahun||+r.tahun>y) return false;
+  const end=r[m.span[1]]; return !end || +end.slice(0,4)>=y;
+}
+const recsOf = (mod,y=ST.year)=>all().filter(r=>r.mod===mod&&inYear(r,y));
+const tasks = ()=>all().filter(r=>r.mod==='tugas');
+const logs = ()=>all().filter(r=>r.mod==='log');
+const refls = ()=>all().filter(r=>r.mod==='refleksi');
+function target(id,y=ST.year){const t=ST.cfg.targets?.[y]; if(t&&t[id]!==undefined&&t[id]!=='')return +t[id]; return KPIS.find(k=>k.id===id).def}
+function kpiRows(y=ST.year){return KPIS.map(k=>{const a=k.f(recsOf(k.mod,y),y)||0;const t=target(k.id,y);return Object.assign({},k,{a,t,p:t>0?Math.min(100,Math.round(a/t*100)):null})})}
+function overall(y=ST.year){const r=kpiRows(y).filter(k=>k.p!==null);return r.length?Math.round(avg(r.map(k=>k.p))):0}
+function habitRate(y){
+  const H=ST.cfg.habits||[]; if(!H.length) return 0;
+  let checks=0, first=null;
+  Object.entries(ST.habit).forEach(([m,d])=>{if(!m.startsWith(String(y)))return;Object.entries(d||{}).forEach(([day,arr])=>{const n=(arr||[]).filter(h=>H.includes(h)).length;if(n){checks+=n;if(!first||day<first)first=day}})});
+  if(!first) return 0;
+  const end = y<Y0?pd(`${y}-12-31`):today();
+  const days=Math.max(1,Math.round((end-pd(first))/864e5)+1);
+  return Math.min(100,Math.round(checks/(days*H.length)*100));
+}
+function urgent(win=30){
+  const out=[];
+  MODS.forEach(m=>recsOf(m.id).forEach(r=>{const d=r[m.due];if(!d)return;const n=daysTo(d);if(m.prog(r)>=100)return;if(n<=win)out.push({r,m,d,n,t:m.title(r),what:(MOD[m.id].fields.find(f=>f.k===m.due)||{}).l})}));
+  tasks().filter(t=>t.status!=='Selesai'&&t.tarikhAkhir).forEach(t=>{const n=daysTo(t.tarikhAkhir);if(n<=win)out.push({r:t,m:null,d:t.tarikhAkhir,n,t:t.tajuk,what:'Tugasan Kanban'+(t.modul&&MOD[t.modul]?' · '+MOD[t.modul].name:'')})});
+  return out.sort((a,b)=>a.n-b.n);
+}
+function dueChip(d){if(!d)return'';const n=daysTo(d);if(n<0)return`<span class="chip bad">Lewat ${-n} hari</span>`;if(n===0)return`<span class="chip bad">Hari ini</span>`;if(n<=14)return`<span class="chip warn">${n} hari lagi</span>`;return`<span class="chip">${fmtD(d)}</span>`}
+const barCls = p=>p>=100?'ok':p>=60?'':p>=30?'warn':'bad';
+
+/* =========================================================
+   NAVIGASI
+   ========================================================= */
+const VIEWS = [
+ {g:'Urus Prestasi'},
+ {id:'pantau',l:'Papan Pemuka',no:'◉'},
+ {id:'rancang',l:'Rancang Sasaran',no:'◎'},
+ {id:'laksana',l:'Kanban Tugasan',no:'▤'},
+ {id:'log',l:'Log Aktiviti',no:'≡'},
+ {g:'10 Modul KPI'},
+ ...MODS.map(m=>({id:m.id,l:m.name,no:m.no,mod:1})),
+ {g:'Lapor & Audit'},
+ {id:'bukti',l:'Ruang Bukti',no:'⌘'},
+ {id:'laporan',l:'Laporan Tahunan',no:'¶'},
+ {id:'data',l:'Data & Tetapan',no:'⚙'},
+ {id:'panduan',l:'Panduan Percuma',no:'?'},
+];
+function cur(){const h=(location.hash||'').slice(1);return VIEWS.some(v=>v.id===h)?h:'pantau'}
+function renderNav(){
+  const c=cur();
+  $('#nav').innerHTML=VIEWS.map(v=>v.g?`<div class="navgrp">${v.g}</div>`:`<a href="#${v.id}" class="${c===v.id?'on':''}"><span class="no">${v.no}</span>${esc(v.l)}${v.mod?`<span class="cnt">${recsOf(v.id).length||''}</span>`:''}</a>`).join('');
+  const p=ST.cfg.profil||{}; $('#who').textContent=p.nama?p.nama:'Rekod prestasi akademik';
+  const M={cloud:['var(--ok)','Disimpan di awan (Artifact) — selamat merentas peranti'],local:['var(--warn)','Disimpan dalam pelayar ini sahaja — eksport sandaran JSON setiap minggu'],error:['var(--bad)','Ralat storan'],loading:['var(--muted)','Memuatkan…']}[ST.mode];
+  $('#mode').innerHTML=`<span class="dot" style="background:${M[0]}"></span>${M[1]}`;
+}
+function yearSel(){const ys=new Set([Y0-1,Y0,Y0+1,ST.year]);all().forEach(r=>r.tahun&&ys.add(+r.tahun));return`<select class="ctl" id="yearSel" aria-label="Tahun penilaian">${[...ys].sort().map(y=>`<option ${y===ST.year?'selected':''}>${y}</option>`).join('')}</select>`}
+function head(eyebrow,title,desc,tools=''){return`<div class="top"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1>${desc?`<p>${desc}</p>`:''}</div><div class="tools">${yearSel()}${tools}</div></div>`}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function render(){
+  renderNav();
+  const v=cur(), el=$('#view');
+  if(ST.mode==='loading'){el.innerHTML=`<div class="empty"><b>Memuatkan rekod KPI…</b>Sila tunggu sebentar.</div>`;return}
+  if(ST.mode==='error'){el.innerHTML=`<div class="empty"><b>Data tidak dapat dibuka</b>${esc(ST.err)}<div style="margin-top:12px"><button class="btn" data-a="go-local">Guna mod tempatan (pelayar ini)</button></div></div>`;return}
+  const fn={pantau:vDash,rancang:vPlan,laksana:vKanban,log:vLog,bukti:vEvidence,laporan:vReport,data:vData,panduan:vGuide}[v];
+  el.innerHTML = fn?fn():vModule(MOD[v]);
+  if(v==='laksana') wireKanban();
+}
+
+/* ---------- PAPAN PEMUKA ---------- */
+function vDash(){
+  const o=overall(), K=kpiRows();
+  const R=recsOf('penyelidikan'), act=R.filter(isActiveGrant);
+  const P=recsOf('penerbitan'), terbit=P.filter(r=>r.peringkat==='Terbit').length;
+  const sv=recsOf('penyeliaan').filter(r=>r.status!=='Bergraduat').length;
+  const late=urgent(30).filter(u=>u.n<0).length;
+  const U=urgent(30).slice(0,9);
+  const C=2*Math.PI*62, off=C*(1-o/100);
+  const hasAny=all().some(r=>MOD[r.mod]);
+  const stages=['Draf','Dihantar','Under Review','Pembetulan','Diterima','Terbit'];
+  const scol=['var(--line)','var(--muted)','var(--warn)','var(--gold)','var(--ink)','var(--ok)'];
+  const cnt=stages.map(s=>P.filter(r=>r.peringkat===s).length), tot=sum(cnt);
+  const wk=mondayOf(new Date()), wkEnd=new Date(wk);wkEnd.setDate(wk.getDate()+6);
+  const wl=logs().filter(l=>l.tarikh&&pd(l.tarikh)>=wk&&pd(l.tarikh)<=wkEnd);
+  const H=ST.cfg.habits||[]; let hc=0,hp=0; for(let i=0;i<7;i++){const d=new Date(wk);d.setDate(wk.getDate()+i);if(d>today())break;const k=ymd(d);hp+=H.length;hc+=((ST.habit[k.slice(0,7)]||{})[k]||[]).filter(h=>H.includes(h)).length}
+  return head(`Tahun penilaian ${ST.year}`,'Papan Pemuka Prestasi','Ringkasan pencapaian KPI tahunan, geran, penerbitan dan tindakan yang perlu diselesaikan.',`<button class="btn pri" data-a="quick">+ Rekod baharu</button>`)+
+  (!hasAny?`<div class="empty"><b>Belum ada rekod untuk dipaparkan</b>Mula dengan menetapkan sasaran di <a href="#rancang">Rancang Sasaran</a>, kemudian tambah rekod dalam mana-mana modul.<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" data-a="quick">+ Tambah rekod pertama</button><button class="btn" data-a="load-sample">Muat data contoh</button></div></div>`:'')+
+  `<section class="hero">
+    <div class="ring" role="img" aria-label="Pencapaian KPI keseluruhan ${o} peratus"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="var(--sunk)" stroke-width="13"/><circle cx="75" cy="75" r="62" fill="none" stroke="${o>=80?'var(--ok)':o>=50?'var(--ink)':'var(--warn)'}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><div class="v"><div><b class="num">${o}%</b><span>KPI ${ST.year}</span></div></div></div>
+    <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
+      <div><h2 style="font-size:19px">Pencapaian keseluruhan ${ST.year}</h2><div class="muted small">Purata pencapaian ${K.filter(k=>k.p!==null).length} sasaran KPI (setiap KPI dihadkan pada 100%). ${K.filter(k=>k.p>=100).length} sudah tercapai.</div></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Geran aktif</div><div class="n">${act.length}</div><div class="s">${rm(sum(act.map(r=>+r.dana||0)))} · baki ${rm(sum(act.map(r=>+r.baki||0)))}</div></div>
+        <div class="stat"><div class="k">Penerbitan terbit</div><div class="n">${terbit} <small>/ ${target('pb_terbit')}</small></div><div class="s">${P.filter(r=>r.peringkat==='Terbit'&&/WoS|Scopus/.test(r.jenis||'')).length} WoS/Scopus · ${P.filter(r=>r.peringkat==='Terbit'&&/Q1/.test(r.jenis||'')).length} Q1</div></div>
+        <div class="stat"><div class="k">Pelajar diselia</div><div class="n">${sv}</div><div class="s">${recsOf('penyeliaan').filter(r=>r.status==='Bergraduat').length} bergraduat</div></div>
+        <div class="stat"><div class="k">Tindakan lewat</div><div class="n" style="color:${late?'var(--bad)':'inherit'}">${late}</div><div class="s">${urgent(30).length} perlu tindakan dalam 30 hari</div></div>
+      </div>
+    </div>
+  </section>
+  <div class="grid g-dash">
+    <section class="card"><h2>Tindakan Mendesak <small>tarikh akhir ≤ 30 hari & lewat</small></h2>
+      ${U.length?`<div class="urg">${U.map(u=>`<div class="it" data-a="edit" data-id="${u.r.id}"><span class="stripe ${u.n<0?'bad':u.n<=7?'warn':'ok'}"></span><div style="min-width:0"><div class="t">${esc(u.t)}</div><div class="d">${u.m?`<span class="modtag">${u.m.no}</span>${esc(u.m.name)} · `:''}${esc(u.what||'')} · ${fmtD(u.d)}</div></div>${dueChip(u.d)}</div>`).join('')}</div>`:`<div class="muted">Tiada tarikh akhir dalam tempoh 30 hari. Tambah tarikh sasaran pada rekod untuk dipantau di sini.</div>`}
+    </section>
+    <section class="card"><h2>Saluran Penerbitan <small>${tot} manuskrip</small></h2>
+      <div class="pipe">${cnt.map((n,i)=>n?`<span style="flex:${n};background:${scol[i]};color:${i<1?'var(--fg)':'var(--surface)'}" title="${stages[i]}: ${n}">${n}</span>`:'').join('')||'<span style="flex:1;color:var(--muted)">tiada data</span>'}</div>
+      <div class="legend">${stages.map((s,i)=>`<span><i style="background:${scol[i]}"></i>${s} <b class="num">${cnt[i]}</b></span>`).join('')}</div>
+      <div style="margin-top:14px">${['pb_idx','pb_q1','pb_hantar'].map(id=>kpiLine(K.find(k=>k.id===id))).join('')}</div>
+    </section>
+  </div>
+  <div class="grid g2">
+    <section class="card"><h2>Kemajuan KPI mengikut sasaran <a class="btn sm" href="#rancang">Ubah sasaran</a></h2>${K.filter(k=>!['pb_idx','pb_q1','pb_hantar'].includes(k.id)).map(kpiLine).join('')}</section>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section class="card"><h2>10 Modul <small>rekod · purata siap · bukti</small></h2><div class="mods">${MODS.map(m=>{const r=recsOf(m.id);const pg=r.length?Math.round(avg(r.map(m.prog))):0;const ev=r.length?Math.round(100*r.filter(x=>x.bukti).length/r.length):0;return`<a class="mod" href="#${m.id}"><div class="h"><b>${m.name}</b><span>${m.no}</span></div><div class="bar ${barCls(pg)}"><i style="width:${pg}%"></i></div><div class="m"><span class="num">${r.length} rekod</span><span class="num">${pg}% · bukti ${ev}%</span></div></a>`}).join('')}</div></section>
+      <section class="card"><h2>Minggu ini <small>${fmtD(ymd(wk))} – ${fmtD(ymd(wkEnd))}</small></h2>
+        <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+          <div class="stat"><div class="k">Jam dilog</div><div class="n num">${sum(wl.map(l=>+l.jam||0))}</div><div class="s">${wl.length} aktiviti</div></div>
+          <div class="stat"><div class="k">Tabiat</div><div class="n num">${hp?Math.round(hc/hp*100):0}%</div><div class="s">${hc}/${hp} tanda</div></div>
+          <div class="stat"><div class="k">Tugasan dibuka</div><div class="n num">${tasks().filter(t=>t.status!=='Selesai').length}</div><div class="s">${tasks().filter(t=>t.status==='Sedang Dibuat').length} sedang dibuat</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#log">Log aktiviti</a><a class="btn sm" href="#peribadi">Tanda tabiat</a><a class="btn sm" href="#laksana">Buka Kanban</a></div>
+      </section>
+    </div>
+  </div>`;
+}
+function kpiLine(k){const m=MOD[k.mod];return`<div class="kpirow"><div class="lbl"><span class="modtag">${m.no}</span>${esc(k.l)}</div><div class="val">${fmtVal(k.a,k.u)} / ${fmtVal(k.t,k.u)} · <b style="color:var(--fg)">${k.p??'–'}%</b></div><div class="bar ${barCls(k.p||0)}"><i style="width:${k.p||0}%"></i></div></div>`}
+
+/* ---------- RANCANG ---------- */
+function vPlan(){
+  const K=kpiRows(), y=ST.year, saved=!!ST.cfg.targets?.[y];
+  return head('Merancang','Rancang Sasaran KPI '+y,'Tetapkan sasaran awal tahun bagi setiap modul. Nilai lalai ialah cadangan permulaan sahaja — selaraskan dengan sasaran SKT/LNPT yang dipersetujui bersama Ketua Jabatan.',`<button class="btn" data-a="copy-targets">Salin dari ${y-1}</button>`)+
+  `${saved?'':`<div class="note">Tahun ${y} masih menggunakan sasaran lalai. Ubah mana-mana nilai di bawah untuk menyimpan sasaran anda sendiri.</div>`}
+  ${MODS.map(m=>{const rows=K.filter(k=>k.mod===m.id);return`<section class="card"><h2><span><span class="modtag">${m.no}</span>${m.name} <small>${m.en}</small></span><a class="btn sm" href="#${m.id}">Buka modul</a></h2><div class="tbl"><table><thead><tr><th>Petunjuk KPI</th><th class="r">Sasaran</th><th class="r">Pencapaian</th><th style="width:28%">Kemajuan</th></tr></thead><tbody>${rows.map(k=>`<tr><td>${esc(k.l)} <span class="muted small">(${k.u})</span></td><td class="r"><input class="ctl num" type="number" min="0" id="t_${k.id}" data-target="${k.id}" value="${k.t}"></td><td class="r num">${fmtVal(k.a,k.u)}</td><td><div style="display:flex;gap:8px;align-items:center"><div class="bar ${barCls(k.p||0)}" style="flex:1"><i style="width:${k.p||0}%"></i></div><span class="num small">${k.p??'–'}%</span></div></td></tr>`).join('')}</tbody></table></div></section>`}).join('')}`;
+}
+
+/* ---------- KANBAN ---------- */
+let kanFilter='';
+function vKanban(){
+  const T=tasks().filter(t=>!kanFilter||t.modul===kanFilter);
+  return head('Melaksana','Kanban Tugasan','Seret kad antara lajur (atau guna butang ‹ ›). Tugasan bertarikh akhir muncul dalam Tindakan Mendesak.',`<select class="ctl" id="kanF" aria-label="Tapis modul"><option value="">Semua modul</option>${MODS.map(m=>`<option value="${m.id}" ${kanFilter===m.id?'selected':''}>${m.name}</option>`).join('')}</select><button class="btn pri" data-a="new-task">+ Tugasan</button>`)+
+  `<div class="kan">${TASK_COLS.map((c,ci)=>{const L=T.filter(t=>(t.status||'Belum Mula')===c).sort((a,b)=>(a.tarikhAkhir||'9999').localeCompare(b.tarikhAkhir||'9999'));return`<div class="col" data-col="${c}"><h3>${c}<span>${L.length}</span></h3>${L.map(t=>`<div class="task pri-${esc(t.keutamaan||'Sederhana')}" draggable="true" data-id="${t.id}"><div class="tt">${esc(t.tajuk)}</div><div class="row">${t.modul&&MOD[t.modul]?`<span class="chip ink">${MOD[t.modul].name}</span>`:''}${t.status!=='Selesai'?dueChip(t.tarikhAkhir):''}${t.bukti?`<a class="ev" href="${esc(t.bukti)}" target="_blank" rel="noopener">↗ bukti</a>`:''}${t.contoh?'<span class="chip gold">Contoh</span>':''}</div><div class="mv"><button class="btn ghost sm" data-a="mv" data-id="${t.id}" data-d="-1" ${ci===0?'disabled':''} aria-label="Ke kiri">‹</button><button class="btn ghost sm" data-a="edit" data-id="${t.id}">Sunting</button><button class="btn ghost sm" data-a="mv" data-id="${t.id}" data-d="1" ${ci===3?'disabled':''} aria-label="Ke kanan">›</button></div></div>`).join('')}${ci===0?`<button class="btn ghost sm" data-a="new-task">+ Tambah</button>`:''}</div>`}).join('')}</div>`;
+}
+function wireKanban(){
+  document.querySelectorAll('.task').forEach(t=>{t.addEventListener('dragstart',e=>{t.classList.add('dragging');e.dataTransfer.setData('text/plain',t.dataset.id)});t.addEventListener('dragend',()=>t.classList.remove('dragging'))});
+  document.querySelectorAll('.col').forEach(c=>{
+    c.addEventListener('dragover',e=>{e.preventDefault();c.classList.add('over')});
+    c.addEventListener('dragleave',()=>c.classList.remove('over'));
+    c.addEventListener('drop',e=>{e.preventDefault();c.classList.remove('over');const id=e.dataTransfer.getData('text/plain');const t=ST.recs[id];if(t&&t.status!==c.dataset.col)Store.put(Object.assign({},t,{status:c.dataset.col}))});
+  });
+}
+
+/* ---------- LOG ---------- */
+function vLog(){
+  const L=logs().sort((a,b)=>(b.tarikh||'').localeCompare(a.tarikh||''));
+  const wk=mondayOf(new Date()); const wl=L.filter(l=>l.tarikh&&pd(l.tarikh)>=wk);
+  const byMod=MODS.map(m=>({m,h:sum(wl.filter(l=>l.modul===m.id).map(l=>+l.jam||0))})).filter(x=>x.h>0);
+  const mx=Math.max(1,...byMod.map(x=>x.h));
+  const groups={}; L.forEach(l=>{const k=l.tarikh?ymd(mondayOf(pd(l.tarikh))):'—';(groups[k]=groups[k]||[]).push(l)});
+  return head('Melaksana','Log Aktiviti Harian / Mingguan','Catat apa yang dibuat setiap hari. Log ini menjadi bahan bukti dan refleksi semasa penilaian tahunan.')+
+  `<section class="card"><h2>Catat aktiviti</h2><form id="logForm" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end">
+    <div class="fld"><label for="lg_tarikh">Tarikh</label><input class="ctl" type="date" id="lg_tarikh" value="${ymd(today())}" required></div>
+    <div class="fld"><label for="lg_modul">Modul</label><select class="ctl" id="lg_modul">${MODS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></div>
+    <div class="fld" style="grid-column:span 2"><label for="lg_aktiviti">Aktiviti</label><input class="ctl" id="lg_aktiviti" required placeholder="cth: Menulis bahagian dapatan manuskrip, 1,200 patah perkataan"></div>
+    <div class="fld"><label for="lg_jam">Jam</label><input class="ctl" type="number" step="0.5" min="0" id="lg_jam" value="1"></div>
+    <div class="fld" style="grid-column:span 2"><label for="lg_bukti">Pautan bukti (pilihan)</label><input class="ctl" type="url" id="lg_bukti" placeholder="https://drive.google.com/..."></div>
+    <button class="btn pri" type="submit">Simpan log</button></form></section>
+  <div class="grid g-dash">
+    <section class="card"><h2>Rekod log <small>${L.length} entri</small></h2>${L.length?Object.entries(groups).map(([w,arr])=>`<div style="margin-bottom:10px"><div class="small muted" style="font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:6px 0">Minggu ${w==='—'?'—':fmtD(w)} · <span class="num">${sum(arr.map(l=>+l.jam||0))} jam</span></div>${arr.map(l=>`<div class="logit"><div class="dt small muted num">${fmtD(l.tarikh)}</div><div style="min-width:0"><div style="overflow-wrap:anywhere">${esc(l.aktiviti)}</div><div class="small muted">${MOD[l.modul]?MOD[l.modul].name:''} · <span class="num">${l.jam||0} jam</span> ${l.bukti?`· <a class="ev" href="${esc(l.bukti)}" target="_blank" rel="noopener">↗ bukti</a>`:''}</div></div><button class="btn ghost sm" data-a="edit" data-id="${l.id}">Sunting</button></div>`).join('')}</div>`).join(''):`<div class="muted">Belum ada log. Catat aktiviti pertama anda di atas.</div>`}</section>
+    <section class="card"><h2>Jam minggu ini mengikut modul</h2>${byMod.length?byMod.map(x=>`<div class="kpirow"><div class="lbl"><span class="modtag">${x.m.no}</span>${x.m.name}</div><div class="val">${x.h} jam</div><div class="bar"><i style="width:${x.h/mx*100}%"></i></div></div>`).join(''):'<div class="muted">Tiada log minggu ini.</div>'}</section>
+  </div>`;
+}
+
+/* ---------- MODUL ---------- */
+const modState={};
+function vModule(m){
+  const s=modState[m.id]||(modState[m.id]={q:'',f:''});
+  let R=recsOf(m.id);
+  const pg=R.length?Math.round(avg(R.map(m.prog))):0, ev=R.length?Math.round(100*R.filter(r=>r.bukti).length/R.length):0;
+  const K=kpiRows().filter(k=>k.mod===m.id);
+  const statusField=m.fields.find(f=>f.t==='select'&&['status','peringkat','milestone','portfolio','laporan','statusKpi'].includes(f.k)&&f.o.length>2)||m.fields.find(f=>f.t==='select');
+  if(s.q){const q=s.q.toLowerCase();R=R.filter(r=>JSON.stringify(r).toLowerCase().includes(q))}
+  if(s.f&&statusField)R=R.filter(r=>r[statusField.k]===s.f);
+  R.sort((a,b)=>(a[m.due]||'9999').localeCompare(b[m.due]||'9999'));
+  let html=head(`Modul ${m.no} · ${m.en}`,m.name,'',`<button class="btn" data-a="csv" data-mod="${m.id}">Eksport CSV</button><button class="btn pri" data-a="new" data-mod="${m.id}">+ Tambah</button>`)+
+  `<div class="strip"><div class="stat"><div class="k">Rekod ${ST.year}</div><div class="n num">${recsOf(m.id).length}</div></div><div class="stat"><div class="k">Purata siap</div><div class="n num">${pg}%</div></div><div class="stat"><div class="k">Ada pautan bukti</div><div class="n num">${ev}%</div></div>${K.slice(0,3).map(k=>`<div class="stat"><div class="k">${esc(k.l)}</div><div class="n num" style="font-size:20px">${fmtVal(k.a,k.u)} <small>/ ${fmtVal(k.t,k.u)}</small></div></div>`).join('')}</div>`;
+  if(m.id==='peribadi') html+=habitCard()+reflCard();
+  html+=`<div class="toolbar"><input class="ctl" id="mq" type="search" placeholder="Cari dalam ${m.name.toLowerCase()}…" value="${esc(s.q)}" data-mod="${m.id}">${statusField?`<select class="ctl" id="mf" data-mod="${m.id}" style="flex:0 1 220px" aria-label="Tapis status"><option value="">Semua ${esc(statusField.l.toLowerCase())}</option>${statusField.o.map(o=>`<option ${s.f===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`:''}</div>`;
+  html+=R.length?`<div class="list">${R.map(r=>recCard(m,r)).join('')}</div>`:`<div class="empty"><b>Tiada rekod ${m.name.toLowerCase()} untuk ${ST.year}</b>${s.q||s.f?'Cuba kosongkan carian atau penapis.':'Tambah rekod pertama — setiap rekod boleh disertakan pautan bukti untuk e-Portfolio.'}<div style="margin-top:12px"><button class="btn pri" data-a="new" data-mod="${m.id}">+ Tambah rekod</button></div></div>`;
+  return html;
+}
+function recCard(m,r){
+  const p=m.prog(r), ch=(m.chips(r)||[]).filter(Boolean);
+  return`<article class="rec"><div style="min-width:0"><div class="ti">${esc(m.title(r))}</div>${m.sub(r)?`<div class="sb">${esc(m.sub(r))}</div>`:''}</div>
+  <div class="act">${r.bukti?`<a class="ev" href="${esc(r.bukti)}" target="_blank" rel="noopener">↗ Bukti</a>`:`<span class="ev none">Tiada bukti</span>`}<button class="btn sm" data-a="edit" data-id="${r.id}">Sunting</button></div>
+  <div class="chips">${ch.map(c=>`<span class="chip ${c[1]||''}">${esc(c[0])}</span>`).join('')}${r[m.due]&&p<100?dueChip(r[m.due]):''}${+r.tahun!==ST.year?`<span class="chip">sejak ${esc(r.tahun)}</span>`:''}${r.contoh?'<span class="chip gold">Contoh</span>':''}</div>
+  <div class="pr"><div class="bar ${barCls(p)}"><i style="width:${p}%"></i></div><span class="num">${p}%</span></div></article>`;
+}
+function habitCard(){
+  const H=ST.cfg.habits||[], wk=mondayOf(new Date()), days=[...Array(7)].map((_,i)=>{const d=new Date(wk);d.setDate(wk.getDate()+i);return d});
+  const nm=['Isn','Sel','Rab','Kha','Jum','Sab','Ahd'], t=ymd(today());
+  return`<section class="card"><h2>Penjejak Tabiat <small>minggu ${fmtD(ymd(wk))} · pematuhan tahunan ${habitRate(ST.year)}%</small><a class="btn sm" href="#data">Ubah senarai tabiat</a></h2>
+  ${H.length?`<div class="hab"><table><thead><tr><th>Tabiat</th>${days.map((d,i)=>`<th class="${ymd(d)===t?'today':''}">${nm[i]}<br><span class="num muted">${d.getDate()}</span></th>`).join('')}<th>%</th></tr></thead><tbody>${H.map(h=>{let c=0,n=0;const cells=days.map(d=>{const k=ymd(d),on=((ST.habit[k.slice(0,7)]||{})[k]||[]).includes(h);if(d<=today()){n++;if(on)c++}return`<td><button class="tick ${on?'on':''}" data-a="habit" data-d="${k}" data-h="${esc(h)}" ${d>today()?'disabled style="opacity:.35"':''} aria-pressed="${on}" aria-label="${esc(h)} ${k}">${on?'✓':''}</button></td>`}).join('');return`<tr><td>${esc(h)}</td>${cells}<td class="num">${n?Math.round(c/n*100):0}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="muted">Tiada tabiat. Tambah di Data & Tetapan.</div>'}</section>`;
+}
+function reflCard(){
+  const L=refls().sort((a,b)=>(b.minggu||'').localeCompare(a.minggu||''));
+  return`<section class="card"><h2>Refleksi Mingguan <small>${L.length} refleksi</small><button class="btn sm pri" data-a="new-refl">+ Refleksi minggu ini</button></h2>${L.length?L.slice(0,4).map(r=>`<div class="logit"><div class="dt small muted num">${fmtD(r.minggu)}</div><div style="min-width:0;overflow-wrap:anywhere"><div><b>Baik:</b> ${esc(r.baik)}</div>${r.cabaran?`<div><b>Cabaran:</b> ${esc(r.cabaran)}</div>`:''}${r.fokus?`<div><b>Fokus seterusnya:</b> ${esc(r.fokus)}</div>`:''}</div><button class="btn ghost sm" data-a="edit" data-id="${r.id}">Sunting</button></div>`).join(''):'<div class="muted">Luangkan 10 minit setiap Jumaat: apa yang berjalan baik, apa cabarannya, dan fokus minggu depan.</div>'}</section>`;
+}
+
+/* ---------- BUKTI ---------- */
+let evFilter='none';
+function vEvidence(){
+  const R=MODS.flatMap(m=>recsOf(m.id).map(r=>({m,r})));
+  const miss=R.filter(x=>!x.r.bukti), show=evFilter==='none'?miss:R;
+  const tot=R.length?Math.round(100*(R.length-miss.length)/R.length):0;
+  return head('Mengelola · Audit-Ready','Ruang Bukti e-Portfolio',`${R.length-miss.length} daripada ${R.length} rekod (${tot}%) sudah mempunyai pautan bukti. Lengkapkan yang tiada sebelum penilaian SKT/LPPT.`)+
+  `<section class="card"><h2>Kesediaan audit mengikut modul</h2><div class="grid g2" style="gap:4px 24px">${MODS.map(m=>{const r=recsOf(m.id);const p=r.length?Math.round(100*r.filter(x=>x.bukti).length/r.length):0;return`<div class="kpirow"><div class="lbl"><span class="modtag">${m.no}</span>${m.name}</div><div class="val">${r.filter(x=>x.bukti).length}/${r.length} · ${r.length?p+'%':'–'}</div><div class="bar ${r.length?barCls(p):''}"><i style="width:${p}%"></i></div></div>`}).join('')}</div></section>
+  <section class="card"><h2>Daftar bukti <span class="seg"><button data-a="evf" data-v="none" class="${evFilter==='none'?'on':''}">Tiada bukti (${miss.length})</button><button data-a="evf" data-v="all" class="${evFilter==='all'?'on':''}">Semua (${R.length})</button></span></h2>
+  ${show.length?`<div class="tbl"><table><thead><tr><th>Modul</th><th>Rekod</th><th>Pautan bukti</th><th></th></tr></thead><tbody>${show.map(({m,r})=>`<tr><td><span class="modtag">${m.no}</span>${m.name}</td><td style="max-width:420px;overflow-wrap:anywhere">${esc(m.title(r))}</td><td>${r.bukti?`<a class="ev" href="${esc(r.bukti)}" target="_blank" rel="noopener">↗ Buka</a>`:'<span class="ev none">Tiada</span>'}</td><td><button class="btn sm" data-a="edit" data-id="${r.id}">${r.bukti?'Sunting':'Tambah pautan'}</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="muted">${evFilter==='none'?'Semua rekod sudah ada pautan bukti. Sedia untuk audit.':'Tiada rekod.'}</div>`}</section>
+  <section class="card"><h2>Cadangan struktur folder Google Drive</h2><div class="small muted" style="margin-bottom:8px">Kongsi setiap folder sebagai "Sesiapa yang ada pautan boleh melihat" supaya penilai dapat membukanya.</div><pre class="mono small" style="margin:0;overflow-x:auto;background:var(--sunk);padding:12px;border-radius:8px">e-Portfolio ${ST.year}/
+${MODS.map(m=>`├── ${m.no}_${m.name}/`).join('\n')}
+└── 00_SKT_LPPT_${ST.year}/</pre></section>`;
+}
+
+/* ---------- LAPORAN ---------- */
+function reportData(y=ST.year){
+  const p=ST.cfg.profil||{}, K=kpiRows(y);
+  return {p,y,o:overall(y),K,mods:MODS.map(m=>({m,R:recsOf(m.id,y),K:K.filter(k=>k.mod===m.id)}))};
+}
+function reportHTML(d,standalone){
+  const sec=d.mods.map(({m,R,K})=>`<h3>${m.no}. ${m.name} (${m.en})</h3><table class="rt"><tr><th>KPI</th><th>Sasaran</th><th>Pencapaian</th><th>%</th></tr>${K.map(k=>`<tr><td>${esc(k.l)}</td><td>${fmtVal(k.t,k.u)}</td><td>${fmtVal(k.a,k.u)}</td><td>${k.p??'–'}%</td></tr>`).join('')}</table>${R.length?`<ul>${R.map(r=>`<li>${esc(m.title(r))}${m.sub(r)?` — <span class="mu">${esc(m.sub(r))}</span>`:''} [${(m.chips(r)||[]).filter(Boolean).map(c=>esc(c[0])).join('; ')}]${r.bukti?` <a href="${esc(r.bukti)}">bukti</a>`:''}</li>`).join('')}</ul>`:'<p class="mu">Tiada rekod.</p>'}`).join('');
+  const body=`<div class="hdr"><div class="mu" style="letter-spacing:.08em;text-transform:uppercase;font-size:12px">Laporan Ringkasan Prestasi Tahunan ${d.y}</div><h2 style="margin:6px 0 4px">${esc(d.p.nama||'Nama Pensyarah')}</h2><div>${[d.p.jawatan,d.p.jabatan,d.p.universiti].filter(Boolean).map(esc).join(' · ')||'<span class="mu">Lengkapkan profil di Data & Tetapan</span>'}</div></div>
+  <p><b>Pencapaian KPI keseluruhan: ${d.o}%</b> (purata ${d.K.filter(k=>k.p!==null).length} petunjuk; ${d.K.filter(k=>k.p>=100).length} tercapai sepenuhnya). Dijana pada ${fmtD(ymd(today()))}.</p>${sec}`;
+  if(!standalone) return body;
+  return`<!doctype html><html lang="ms"><head><meta charset="utf-8"><title>Laporan Prestasi ${d.y} — ${esc(d.p.nama||'')}</title><style>body{font-family:Georgia,'Times New Roman',serif;max-width:820px;margin:32px auto;padding:0 20px;color:#1a1f33;line-height:1.5}h2,h3{font-family:Arial,Helvetica,sans-serif}h3{margin-top:24px;border-bottom:1px solid #ccc;padding-bottom:4px}.hdr{border-bottom:2px solid #1a1f33;padding-bottom:10px}.mu{color:#5d6379}table.rt{border-collapse:collapse;width:100%;font-size:13px;font-family:Arial,sans-serif}.rt th,.rt td{border:1px solid #ccc;padding:4px 6px;text-align:left}.rt th{background:#eef0f6}li{margin:3px 0}</style></head><body>${body}</body></html>`;
+}
+function reportMD(d){
+  let s=`# Laporan Ringkasan Prestasi Tahunan ${d.y}\n\n**${d.p.nama||'Nama Pensyarah'}**  \n${[d.p.jawatan,d.p.jabatan,d.p.universiti].filter(Boolean).join(' · ')}\n\n**Pencapaian KPI keseluruhan: ${d.o}%**\n`;
+  d.mods.forEach(({m,R,K})=>{s+=`\n## ${m.no}. ${m.name}\n\n| KPI | Sasaran | Pencapaian | % |\n|---|---|---|---|\n`+K.map(k=>`| ${k.l} | ${fmtVal(k.t,k.u)} | ${fmtVal(k.a,k.u)} | ${k.p??'–'}% |`).join('\n')+'\n\n'+(R.length?R.map(r=>`- ${m.title(r)}${m.sub(r)?' — '+m.sub(r):''} [${(m.chips(r)||[]).filter(Boolean).map(c=>c[0]).join('; ')}]${r.bukti?` ([bukti](${r.bukti}))`:''}`).join('\n'):'_Tiada rekod._')+'\n'});
+  return s;
+}
+function vReport(){
+  const d=reportData();
+  return head('Melapor','Laporan Tahunan '+ST.year,'Ringkasan untuk penilaian SKT/LPPT dan e-Portfolio. Eksport sebagai HTML (boleh dibuka dalam Word / dicetak ke PDF), Markdown, atau CSV.',`<button class="btn" data-a="exp-md">Markdown</button><button class="btn" data-a="exp-csv-all">CSV semua</button><button class="btn pri" data-a="exp-html">Eksport HTML</button>`)+
+  `<article class="report">${reportHTML(d,false).replace(/class="rt"/g,'class="rt" style="width:100%;border-collapse:collapse"').replace(/<table class="rt" style="([^"]*)">/g,'<div class="tbl"><table style="$1">').replace(/<\/table>/g,'</table></div>').replace(/class="mu"/g,'class="muted"')}</article>`;
+}
+
+/* ---------- DATA & TETAPAN ---------- */
+function vData(){
+  const p=ST.cfg.profil||{}, n=all().length, ex=all().filter(r=>r.contoh).length;
+  return head('Tetapan','Data & Tetapan','Profil untuk laporan, senarai tabiat, sandaran dan pemindahan data.')+
+  `<div class="grid g2">
+  <section class="card"><h2>Profil pensyarah</h2><form id="profForm" class="grid" style="gap:10px">
+   ${[['nama','Nama penuh','cth: Dr. ...'],['jawatan','Jawatan & gred','cth: Pensyarah Kanan (DS13)'],['jabatan','Jabatan / Fakulti',''],['universiti','Universiti','']].map(([k,l,ph])=>`<div class="fld"><label for="pf_${k}">${l}</label><input class="ctl" id="pf_${k}" value="${esc(p[k]||'')}" placeholder="${ph}"></div>`).join('')}
+   <div><button class="btn pri" type="submit">Simpan profil</button></div></form></section>
+  <section class="card"><h2>Senarai tabiat harian</h2><div class="fld"><label for="habList">Satu tabiat setiap baris</label><textarea class="ctl" id="habList" rows="6">${esc((ST.cfg.habits||[]).join('\n'))}</textarea><span class="hint">Menukar nama tabiat tidak memindahkan tanda lama kepada nama baharu.</span></div><div style="margin-top:10px"><button class="btn pri" data-a="save-habits">Simpan tabiat</button></div></section>
+  <section class="card"><h2>Storan & sandaran</h2>
+   <p class="small" style="margin-top:0">${ST.mode==='cloud'?'Mod <b>awan</b>: rekod disimpan dalam pangkalan data artifact ini, peribadi kepada pemilik, dan boleh dibuka dari telefon atau komputer.':'Mod <b>tempatan</b>: rekod disimpan dalam pelayar ini sahaja. Membersihkan data pelayar akan memadamnya — eksport sandaran JSON secara berkala.'} Jumlah: <b class="num">${n}</b> rekod.</p>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-a="exp-json">Eksport sandaran JSON</button><label class="btn" for="impFile">Import JSON</label><input type="file" id="impFile" accept=".json,application/json" hidden></div>
+   <p class="small muted">Fail JSON yang sama boleh diimport ke versi hos-sendiri (GitHub Pages / Netlify) atau sebaliknya.</p></section>
+  <section class="card"><h2>Bersihkan data</h2>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-a="load-sample">Muat data contoh</button><button class="btn danger" data-a="del-sample" ${ex?'':'disabled'}>Padam ${ex} rekod contoh</button><button class="btn danger" data-a="del-all" ${n?'':'disabled'}>Padam semua rekod</button></div>
+   <p class="small muted">Rekod contoh ditanda "Contoh". Padamkannya selepas anda memasukkan data sebenar.</p></section>
+  </div>`;
+}
+
+/* ---------- PANDUAN ---------- */
+function vGuide(){
+  return head('Panduan','Aktifkan secara percuma','Tiga cara menggunakan sistem ini tanpa langganan bulanan.')+
+  `<div class="grid g3 guide">
+   <section class="card"><h2>A · Terus di Claude</h2><ol><li>Buka pautan artifact ini (atau sematkan di bar sisi claude.ai).</li><li>Data disimpan dalam pangkalan data artifact — peribadi kepada anda.</li><li>Buka pada telefon melalui aplikasi Claude dengan akaun yang sama.</li><li>Eksport sandaran JSON setiap bulan.</li></ol><p class="small muted">Paling mudah. Memerlukan akaun claude.ai.</p></section>
+   <section class="card"><h2>B · GitHub Pages</h2><ol><li>Daftar akaun percuma di <code>github.com</code>.</li><li>Cipta repositori awam baharu, cth. <code>kpi</code>.</li><li>Muat naik fail HTML sistem ini dan namakan semula <code>index.html</code>.</li><li>Settings → Pages → Source: <code>Deploy from a branch</code>, pilih <code>main</code> / <code>root</code>, Save.</li><li>Dalam beberapa minit, buka <code>https://namaanda.github.io/kpi/</code>.</li><li>Import fail sandaran JSON di Data & Tetapan.</li></ol><p class="small muted">Data kekal dalam pelayar setiap peranti (mod tempatan).</p></section>
+   <section class="card"><h2>C · Luar talian</h2><ol><li>Simpan fail HTML dalam folder Google Drive / OneDrive anda.</li><li>Klik dua kali untuk buka dalam Chrome / Edge.</li><li>Sistem berjalan sepenuhnya dalam pelayar — tiada pelayan diperlukan.</li><li>Gunakan pelayar yang sama setiap kali, dan eksport JSON untuk sandaran.</li></ol><p class="small muted">Sesuai jika rangkaian kampus terhad.</p></section>
+  </div>
+  <section class="card guide"><h2>Rutin cadangan</h2><ol><li><b>Januari:</b> tetapkan sasaran di Rancang Sasaran; selaraskan dengan borang SKT.</li><li><b>Setiap hari:</b> 2 minit di Log Aktiviti dan tanda tabiat.</li><li><b>Setiap Jumaat:</b> refleksi mingguan, kemas kini Kanban, semak Tindakan Mendesak.</li><li><b>Setiap bulan:</b> lengkapkan pautan bukti di Ruang Bukti; eksport sandaran JSON.</li><li><b>Pertengahan & hujung tahun:</b> eksport Laporan Tahunan untuk kajian semula SKT dan LPPT.</li></ol></section>`;
+}
+
+/* =========================================================
+   BORANG MODAL
+   ========================================================= */
+function fieldsFor(rec){
+  if(rec.mod==='tugas') return [{k:'tajuk',l:'Tugasan',t:'text',req:1,full:1},{k:'modul',l:'Modul berkaitan',t:'select',o:['',...MODS.map(m=>m.id)],ol:['—',...MODS.map(m=>m.name)]},{k:'status',l:'Status',t:'select',o:TASK_COLS},{k:'keutamaan',l:'Keutamaan',t:'select',o:['Tinggi','Sederhana','Rendah']},{k:'tarikhAkhir',l:'Tarikh akhir',t:'date'},{k:'tahun',l:'Tahun',t:'number',req:1},{k:'bukti',l:'Pautan bukti / dokumen',t:'url',full:1},{k:'nota',l:'Catatan',t:'textarea',full:1}];
+  if(rec.mod==='log') return [{k:'tarikh',l:'Tarikh',t:'date',req:1},{k:'modul',l:'Modul',t:'select',o:MODS.map(m=>m.id),ol:MODS.map(m=>m.name)},{k:'aktiviti',l:'Aktiviti',t:'textarea',req:1,full:1},{k:'jam',l:'Jam',t:'number'},{k:'tahun',l:'Tahun',t:'number',req:1},{k:'bukti',l:'Pautan bukti',t:'url',full:1}];
+  if(rec.mod==='refleksi') return [{k:'minggu',l:'Minggu bermula (Isnin)',t:'date',req:1},{k:'tahun',l:'Tahun',t:'number',req:1},{k:'baik',l:'Apa yang berjalan baik?',t:'textarea',req:1,full:1},{k:'cabaran',l:'Cabaran / halangan',t:'textarea',full:1},{k:'fokus',l:'Fokus minggu depan',t:'textarea',full:1}];
+  const m=MOD[rec.mod]; return [...m.fields,...COMMON(m)];
+}
+function openForm(rec){
+  const isNew=!rec.id, F=fieldsFor(rec);
+  const name=rec.mod==='tugas'?'Tugasan':rec.mod==='log'?'Log aktiviti':rec.mod==='refleksi'?'Refleksi mingguan':MOD[rec.mod].name;
+  const ctl=f=>{const v=rec[f.k]??'';const id='f_'+f.k;
+    if(f.t==='select')return`<select class="ctl" id="${id}">${f.k!=='modul'&&!f.o.includes(v)&&v===''?'<option value="">— pilih —</option>':''}${f.o.map((o,i)=>`<option value="${esc(o)}" ${String(v)===o?'selected':''}>${esc(f.ol?f.ol[i]:o)}</option>`).join('')}</select>`;
+    if(f.t==='textarea')return`<textarea class="ctl" id="${id}" rows="3" ${f.req?'required':''}>${esc(v)}</textarea>`;
+    return`<input class="ctl ${f.t==='number'?'num':''}" id="${id}" type="${f.t}" ${f.t==='number'?'step="any" min="0"':''} value="${esc(v)}" placeholder="${esc(f.ph||'')}" ${f.req?'required':''}>`};
+  $('#modal').innerHTML=`<div class="ov" data-a="close-ov"><form class="dlg" id="recForm" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+   <header><h3 id="dlgT">${isNew?'Tambah':'Sunting'} · ${esc(name)}</h3><button type="button" class="btn ghost" data-a="close" aria-label="Tutup">✕</button></header>
+   <div class="bd">${F.map(f=>`<div class="fld ${f.full||f.t==='textarea'?'full':''}"><label for="f_${f.k}">${esc(f.l)}${f.req?' *':''}</label>${ctl(f)}${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`).join('')}</div>
+   <footer>${isNew?'':`<button type="button" class="btn danger" data-a="ask-del" style="margin-right:auto">Padam</button>`}<button type="button" class="btn" data-a="close">Batal</button><button class="btn pri" type="submit">Simpan</button></footer></form></div>`;
+  const form=$('#recForm');
+  form.addEventListener('submit',async e=>{e.preventDefault();const out=Object.assign({},rec);F.forEach(f=>{let v=$('#f_'+f.k).value.trim();if(f.t==='number')v=v===''?'':+v;out[f.k]=v});if(out.contoh&&!isNew)delete out.contoh;try{await Store.put(out);closeModal();toast(isNew?'Rekod ditambah':'Rekod dikemas kini')}catch(err){}});
+  form.querySelector('[data-a="ask-del"]')?.addEventListener('click',()=>confirmBox('Padam rekod ini?',`"${esc(rec.tajuk||rec.aktiviti||(MOD[rec.mod]?MOD[rec.mod].title(rec):'rekod'))}" akan dipadam secara kekal.`,'Padam',async()=>{await Store.del(rec.id);toast('Rekod dipadam')}));
+  setTimeout(()=>form.querySelector('input,select,textarea')?.focus(),30);
+}
+function closeModal(){$('#modal').innerHTML=''}
+function confirmBox(title,msg,okLabel,onOk){
+  $('#modal').innerHTML=`<div class="ov" data-a="close-ov"><div class="dlg" role="alertdialog" aria-modal="true" style="width:min(440px,100%)"><header><h3>${title}</h3></header><div style="padding:16px 18px">${msg}</div><footer><button class="btn" data-a="close">Batal</button><button class="btn pri" id="okBtn" style="background:var(--bad);border-color:var(--bad)">${okLabel}</button></footer></div></div>`;
+  $('#okBtn').addEventListener('click',async()=>{closeModal();await onOk()});
+}
+function quickPick(){
+  $('#modal').innerHTML=`<div class="ov" data-a="close-ov"><div class="dlg" role="dialog" aria-modal="true"><header><h3>Rekod baharu — pilih jenis</h3><button class="btn ghost" data-a="close" aria-label="Tutup">✕</button></header><div class="bd" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))">${MODS.map(m=>`<button class="btn" data-a="new" data-mod="${m.id}" style="justify-content:flex-start"><span class="modtag">${m.no}</span>${m.name}</button>`).join('')}<button class="btn" data-a="new-task" style="justify-content:flex-start"><span class="modtag">▤</span>Tugasan Kanban</button></div></div></div>`;
+}
+let toastT; function toast(s){clearTimeout(toastT);let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=s;toastT=setTimeout(()=>t.remove(),2600)}
+
+/* =========================================================
+   EKSPORT / IMPORT
+   ========================================================= */
+async function saveFile(filename,text,mime){
+  let dl=null; try{dl=window.claude&&typeof window.claude.use==='function'?await window.claude.use('downloads'):null}catch(e){}
+  if(dl){try{await dl.save({filename,data:new Blob([text],{type:mime})});toast('Fail disimpan');return}catch(e){if(e&&e.code==='declined'){toast('Muat turun dibatalkan');return}}}
+  let url=''; try{url=URL.createObjectURL(new Blob([text],{type:mime}))}catch(e){}
+  $('#modal').innerHTML=`<div class="ov" data-a="close-ov"><div class="dlg" role="dialog" aria-modal="true"><header><h3>${esc(filename)}</h3><button class="btn ghost" data-a="close" aria-label="Tutup">✕</button></header><div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px"><p class="small muted" style="margin:0">Muat turun terus mungkin disekat dalam paparan ini. Salin kandungan di bawah dan tampal ke fail baharu bernama <b>${esc(filename)}</b>, atau cuba pautan muat turun.</p><textarea class="ctl mono" id="expTxt" rows="12" readonly>${esc(text)}</textarea></div><footer>${url?`<a class="btn" href="${url}" download="${esc(filename)}">Muat turun</a>`:''}<button class="btn pri" id="cpBtn">Salin</button></footer></div></div>`;
+  $('#cpBtn').addEventListener('click',async()=>{const ta=$('#expTxt');try{await navigator.clipboard.writeText(text);toast('Disalin ke papan klip')}catch(e){ta.focus();ta.select();try{document.execCommand('copy');toast('Disalin')}catch(_){toast('Pilih semua teks dan salin secara manual')}}});
+}
+function csvFor(mods){
+  const rows=[];
+  mods.forEach(m=>{const F=[...m.fields,...COMMON(m)];rows.push(['Modul',...F.map(f=>f.l),'Kemajuan %']);recsOf(m.id).forEach(r=>rows.push([m.name,...F.map(f=>r[f.k]??''),m.prog(r)]));rows.push([])});
+  return '﻿'+rows.map(r=>r.map(v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\n');
+}
+function backupJSON(){return JSON.stringify({app:'kpi-pensyarah',versi:1,dieksport:new Date().toISOString(),recs:all(),cfg:ST.cfg,habit:ST.habit},null,1)}
+async function importJSON(text){
+  let d; try{d=JSON.parse(text)}catch(e){toast('Fail bukan JSON yang sah');return}
+  if(!d||d.app!=='kpi-pensyarah'||!Array.isArray(d.recs)){toast('Fail ini bukan sandaran KPI Pensyarah');return}
+  toast(`Mengimport ${d.recs.length} rekod…`);
+  if(d.cfg){ST.cfg=Object.assign({targets:{},habits:DEFAULT_HABITS.slice(),profil:{}},d.cfg)}
+  if(d.habit){Object.assign(ST.habit,d.habit)}
+  if(ST.mode==='cloud'){
+    for(let i=0;i<d.recs.length;i+=15){await Promise.all(d.recs.slice(i,i+15).map(r=>{const id=r.id||uid();const {id:_x,...b}=r;ST.recs[id]=Object.assign({},r,{id});return DB.collection('kpi').doc(id).set(clean(b)).catch(()=>{})}))}
+    await Store.cfg(); for(const m of Object.keys(d.habit||{})) await DB.collection('habit').doc(m).set({d:ST.habit[m]}).catch(()=>{});
+  } else { d.recs.forEach(r=>{ST.recs[r.id||uid()]=r}); lsWrite(); }
+  render(); toast(`${d.recs.length} rekod diimport`);
+}
+function sampleRecs(){
+  const y=Y0, t=today(), add=n=>{const d=new Date(t);d.setDate(d.getDate()+n);return ymd(d)};
+  const R=[
+   {mod:'pengajaran',kod:'CONTOH101',nama:'Sejarah Sosial Borneo',sesi:`Sem 1, ${y}/${y+1}`,pelajar:85,kredit:3,portfolio:'Dalam Penyediaan',eppp:'',tarikhPortfolio:add(20)},
+   {mod:'pengajaran',kod:'CONTOH202',nama:'Sosiologi Sejarah',sesi:`Sem 2, ${y-1}/${y}`,pelajar:42,kredit:3,portfolio:'Disahkan',eppp:88.5,bukti:'https://drive.google.com/'},
+   {mod:'penyeliaan',nama:'Pelajar Contoh A',peringkat:'PhD',peranan:'Penyelia Utama',tajuk:'Institusi Islam dan masyarakat pesisir Sarawak, 1900–1963',status:'Menulis',tarikhDaftar:`${y-2}-09-01`,got:add(240)},
+   {mod:'penyeliaan',nama:'Pelajar Contoh B',peringkat:'Master',peranan:'Penyelia Bersama',tajuk:'Kearifan tempatan dalam pengurusan air komuniti luar bandar',status:'Viva',tarikhDaftar:`${y-1}-03-01`,got:add(25)},
+   {mod:'penyelidikan',tajuk:'Projek contoh: Sejarah institusi masjid utama di Sarawak',kodGeran:'Geran Universiti',kategori:'Universiti',peranan:'Ketua Penyelidik',dana:20000,baki:14500,mula:`${y}-03-01`,tamat:`${y+1}-02-28`,milestone:'Fasa 1'},
+   {mod:'penyelidikan',tajuk:'Projek contoh: Modul integriti berasaskan kearifan tempatan',kodGeran:'Geran Kebangsaan',kategori:'Kebangsaan',peranan:'Penyelidik Bersama',dana:85000,baki:30000,mula:`${y-1}-07-01`,tamat:add(55),milestone:'Laporan Akhir'},
+   {mod:'penerbitan',tajuk:'Contoh: Historical sociology of Islam in Borneo — a bibliometric review',jurnal:'Jurnal contoh (Scopus Q1)',jenis:'Scopus Q1',peringkat:'Under Review',peranan:'Penulis Utama',tarikhSasaran:add(40)},
+   {mod:'penerbitan',tajuk:'Contoh: Artikel kajian sejarah pendidikan Melayu',jurnal:'Jurnal contoh (WoS)',jenis:'WoS Q2',peringkat:'Pembetulan',peranan:'Utama & Koresponden',tarikhSasaran:add(9)},
+   {mod:'penerbitan',tajuk:'Contoh: Artikel bibliometrik yang telah terbit',jurnal:'Jurnal contoh',jenis:'Scopus Q2',peringkat:'Terbit',peranan:'Penulis Koresponden',sitasi:3,doi:'https://doi.org/',bukti:'https://drive.google.com/'},
+   {mod:'penerbitan',tajuk:'Contoh: Bab buku sejarah tempatan',jurnal:'Penerbit universiti',jenis:'Bab Buku',peringkat:'Draf',peranan:'Penulis Utama'},
+   {mod:'persidangan',nama:'Persidangan Antarabangsa Contoh',tajukKertas:'Kertas kerja contoh',peringkat:'Antarabangsa',peranan:'Pembentang',tarikh:add(-30),tempat:'Lokasi contoh',status:'Dibentang / Dihadiri',prosiding:'Belum Terbit'},
+   {mod:'perundingan',agensi:'Agensi contoh',skop:'Kajian contoh untuk agensi kerajaan negeri',nilai:15000,mula:`${y}-06-01`,tamat:add(70),laporan:'Dalam Pelaksanaan',bayaran:'Bayaran Separa'},
+   {mod:'pentadbiran',jawatan:'Penyelaras Program (contoh)',peringkat:'Fakulti',mula:`${y}-10-21`,tamat:`${y+2}-10-20`,kpiPortfolio:'Contoh: semakan kurikulum program siap sebelum Jun',statusKpi:'Dalam Pelaksanaan'},
+   {mod:'profesionalisme',jenis:'Keahlian Badan Ikhtisas',nama:'Persatuan profesional contoh',cpd:0,pembaharuan:add(18),status:'Perlu Diperbaharui'},
+   {mod:'profesionalisme',jenis:'Kursus / Latihan (CPD)',nama:'Bengkel contoh: Penulisan artikel jurnal berimpak tinggi',cpd:12,tarikh:add(-60),status:'Selesai',bukti:'https://drive.google.com/'},
+   {mod:'perkhidmatan',program:'Ceramah sejarah tempatan di sekolah (contoh)',kategori:'Sekolah',peranan:'Penceramah',tarikh:add(-15),jam:3,status:'Selesai',impak:'Contoh: 120 pelajar menyertai'},
+   {mod:'peribadi',matlamat:'Menulis setiap pagi sebelum kelas (contoh)',kategori:'Penulisan Harian',sasaran:'500 patah perkataan sehari',tarikh:`${y}-12-31`,status:'Sedang Berjalan'},
+   {mod:'tugas',tajuk:'Hantar pembetulan manuskrip (contoh)',modul:'penerbitan',status:'Sedang Dibuat',keutamaan:'Tinggi',tarikhAkhir:add(9)},
+   {mod:'tugas',tajuk:'Kemas kini fail kursus (contoh)',modul:'pengajaran',status:'Belum Mula',keutamaan:'Sederhana',tarikhAkhir:add(20)},
+   {mod:'tugas',tajuk:'Laporan kemajuan geran (contoh)',modul:'penyelidikan',status:'Semakan',keutamaan:'Tinggi',tarikhAkhir:add(4)},
+   {mod:'log',tarikh:ymd(t),modul:'penerbitan',aktiviti:'Contoh: menulis bahagian perbincangan manuskrip',jam:2},
+  ];
+  return R.map((r,i)=>Object.assign({tahun:y,contoh:true,id:'contoh'+String(i).padStart(2,'0')},r));
+}
+
+/* =========================================================
+   PERISTIWA
+   ========================================================= */
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-a]'); if(!b) return;
+  const a=b.dataset.a;
+  if(a==='close-ov'&&e.target!==b) return;
+  switch(a){
+   case 'close': case 'close-ov': closeModal(); break;
+   case 'quick': quickPick(); break;
+   case 'new': openForm({mod:b.dataset.mod,tahun:ST.year}); break;
+   case 'new-task': openForm({mod:'tugas',status:'Belum Mula',keutamaan:'Sederhana',tahun:ST.year,modul:kanFilter}); break;
+   case 'new-refl': openForm({mod:'refleksi',minggu:ymd(mondayOf(new Date())),tahun:ST.year}); break;
+   case 'edit': {const r=ST.recs[b.dataset.id]; if(r) openForm(r); break}
+   case 'mv': {const t=ST.recs[b.dataset.id];const i=TASK_COLS.indexOf(t.status||'Belum Mula')+ +b.dataset.d;if(TASK_COLS[i])Store.put(Object.assign({},t,{status:TASK_COLS[i]}));break}
+   case 'habit': {const d=b.dataset.d,h=b.dataset.h,m=d.slice(0,7);const mo=ST.habit[m]=Object.assign({},ST.habit[m]||{});const arr=(mo[d]||[]).slice();const i=arr.indexOf(h);i>=0?arr.splice(i,1):arr.push(h);mo[d]=arr;Store.habitMonth(m);break}
+   case 'evf': evFilter=b.dataset.v; render(); break;
+   case 'copy-targets': {const src=ST.cfg.targets?.[ST.year-1];if(!src){toast(`Tiada sasaran tersimpan untuk ${ST.year-1}`);break}ST.cfg.targets=Object.assign({},ST.cfg.targets,{[ST.year]:Object.assign({},src)});await Store.cfg();toast('Sasaran disalin');break}
+   case 'csv': saveFile(`kpi-${b.dataset.mod}-${ST.year}.csv`,csvFor([MOD[b.dataset.mod]]),'text/csv'); break;
+   case 'exp-csv-all': saveFile(`kpi-semua-modul-${ST.year}.csv`,csvFor(MODS),'text/csv'); break;
+   case 'exp-html': saveFile(`laporan-prestasi-${ST.year}.html`,reportHTML(reportData(),true),'text/html'); break;
+   case 'exp-md': saveFile(`laporan-prestasi-${ST.year}.md`,reportMD(reportData()),'text/markdown'); break;
+   case 'exp-json': saveFile(`sandaran-kpi-pensyarah-${ymd(today())}.json`,backupJSON(),'application/json'); break;
+   case 'save-habits': ST.cfg.habits=$('#habList').value.split('\n').map(s=>s.trim()).filter(Boolean); await Store.cfg(); toast('Tabiat disimpan'); break;
+   case 'load-sample': {const S=sampleRecs();for(const r of S){if(!ST.recs[r.id])await Store.put(r)}toast('Data contoh dimuatkan');break}
+   case 'del-sample': confirmBox('Padam semua rekod contoh?','Hanya rekod bertanda "Contoh" akan dipadam. Rekod sebenar anda tidak terjejas.','Padam contoh',async()=>{for(const r of all().filter(r=>r.contoh))await Store.del(r.id);toast('Rekod contoh dipadam')}); break;
+   case 'del-all': confirmBox('Padam SEMUA rekod?','Tindakan ini tidak boleh diundur. Eksport sandaran JSON dahulu jika perlu.','Padam semua',async()=>{for(const r of all())await Store.del(r.id);toast('Semua rekod dipadam')}); break;
+   case 'go-local': useLocal(); break;
+  }
+});
+document.addEventListener('change',async e=>{
+  const t=e.target;
+  if(t.id==='yearSel'){ST.year=+t.value;render()}
+  else if(t.id==='kanF'){kanFilter=t.value;render()}
+  else if(t.id==='mf'){modState[t.dataset.mod].f=t.value;render()}
+  else if(t.dataset.target){const y=ST.year;const cur=Object.assign({},...KPIS.map(k=>({[k.id]:target(k.id,y)})),ST.cfg.targets?.[y]||{});cur[t.dataset.target]=t.value===''?'':+t.value;ST.cfg.targets=Object.assign({},ST.cfg.targets,{[y]:cur});await Store.cfg();toast('Sasaran disimpan')}
+  else if(t.id==='impFile'&&t.files[0]){const fr=new FileReader();fr.onload=()=>importJSON(fr.result);fr.readAsText(t.files[0]);t.value=''}
+});
+let qT; document.addEventListener('input',e=>{if(e.target.id==='mq'){const t=e.target;clearTimeout(qT);qT=setTimeout(()=>{modState[t.dataset.mod].q=t.value;const pos=t.selectionStart;render();const n=$('#mq');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},250)}});
+document.addEventListener('submit',async e=>{
+  if(e.target.id==='logForm'){e.preventDefault();const tg=$('#lg_tarikh').value;await Store.put({mod:'log',tarikh:tg,tahun:+tg.slice(0,4)||ST.year,modul:$('#lg_modul').value,aktiviti:$('#lg_aktiviti').value.trim(),jam:+$('#lg_jam').value||0,bukti:$('#lg_bukti').value.trim()});toast('Log disimpan')}
+  if(e.target.id==='profForm'){e.preventDefault();ST.cfg.profil={nama:$('#pf_nama').value.trim(),jawatan:$('#pf_jawatan').value.trim(),jabatan:$('#pf_jabatan').value.trim(),universiti:$('#pf_universiti').value.trim()};await Store.cfg();toast('Profil disimpan')}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal').innerHTML)closeModal()});
+window.addEventListener('hashchange',()=>{closeModal();render();window.scrollTo(0,0)});
+render();
+initStore();
+</script>
+
+</body>
+</html>
